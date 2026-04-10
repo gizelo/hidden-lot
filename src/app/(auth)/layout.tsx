@@ -37,7 +37,10 @@ export default function AuthLayout({
         {/* Content */}
         <div className="relative max-w-md space-y-6 text-center">
           <h1 className="text-5xl font-bold tracking-tight">
-            🪎 Unhide your lot.
+            <span>🪎</span>{" "}
+            <span className="[text-shadow:3px_3px_0_rgba(0,0,0,0.2)]">
+              Unhide your lot.
+            </span>
           </h1>
           <p className="text-xl text-primary-foreground/80">
             Turn forgotten things into someone else&apos;s treasure in one
