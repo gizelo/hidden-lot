@@ -1,10 +1,13 @@
 "use server";
 
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 export async function signUp(formData: FormData) {
   const supabase = await createClient();
+  const headersList = await headers();
+  const origin = headersList.get("origin") || "";
 
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
@@ -15,6 +18,7 @@ export async function signUp(formData: FormData) {
     password,
     options: {
       data: { display_name: displayName },
+      emailRedirectTo: `${origin}/auth/callback`,
     },
   });
 

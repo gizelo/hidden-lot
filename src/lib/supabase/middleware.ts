@@ -37,7 +37,10 @@ export async function updateSession(request: NextRequest) {
     pathname.startsWith("/register") ||
     pathname.startsWith("/verify-email");
   const isPublicRoute =
-    isAuthRoute || pathname === "/" || pathname.startsWith("/api");
+    isAuthRoute ||
+    pathname === "/" ||
+    pathname.startsWith("/api") ||
+    pathname.startsWith("/auth");
 
   // Redirect unauthenticated users to login
   if (!user && !isPublicRoute) {
