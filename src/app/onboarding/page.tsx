@@ -20,16 +20,20 @@ const CATEGORY_EMOJIS: Record<string, string> = {
   "Curiosities & Oddities": "🔮",
 };
 
+const MAX_CATEGORIES = 5;
+
 export default function OnboardingPage() {
   const [selected, setSelected] = useState<string[]>([]);
   const [pending, setPending] = useState(false);
 
   function toggle(category: string) {
-    setSelected((prev) =>
-      prev.includes(category)
-        ? prev.filter((c) => c !== category)
-        : [...prev, category]
-    );
+    setSelected((prev) => {
+      if (prev.includes(category)) {
+        return prev.filter((c) => c !== category);
+      }
+      if (prev.length >= MAX_CATEGORIES) return prev;
+      return [...prev, category];
+    });
   }
 
   async function handleSubmit() {
@@ -58,7 +62,8 @@ export default function OnboardingPage() {
               What are you into? 🪎
             </h1>
             <p className="text-muted-foreground">
-              Pick the categories that interest you. This shapes your feed.
+              Pick up to {MAX_CATEGORIES} categories that interest you. This
+              shapes your feed.
             </p>
           </div>
 
@@ -66,15 +71,20 @@ export default function OnboardingPage() {
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {CATEGORIES.map((category) => {
               const isSelected = selected.includes(category);
+              const isMaxed =
+                selected.length >= MAX_CATEGORIES && !isSelected;
               return (
                 <button
                   key={category}
                   type="button"
                   onClick={() => toggle(category)}
+                  disabled={isMaxed}
                   className={`flex flex-col items-center gap-2 rounded-xl border-2 px-4 py-5 text-sm font-medium transition-all ${
                     isSelected
                       ? "border-primary bg-primary/10 text-primary scale-[1.02] shadow-sm"
-                      : "border-border bg-background text-foreground hover:border-primary/40 hover:bg-muted/50"
+                      : isMaxed
+                        ? "border-border bg-muted/30 text-muted-foreground opacity-50 cursor-not-allowed"
+                        : "border-border bg-background text-foreground hover:border-primary/40 hover:bg-muted/50"
                   }`}
                 >
                   <span className="text-2xl">

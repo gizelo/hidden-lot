@@ -56,20 +56,29 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Redirect authenticated users without categories to onboarding
-  if (user && !pathname.startsWith("/onboarding") && !isPublicRoute) {
+  // Check onboarding status for authenticated users on protected routes
+  if (user && !isPublicRoute) {
     const { data: profile } = await supabase
       .from("profiles")
       .select("category_preferences")
       .eq("id", user.id)
       .single();
 
-    if (
-      !profile?.category_preferences ||
-      profile.category_preferences.length === 0
-    ) {
+    const hasCategories =
+      profile?.category_preferences &&
+      profile.category_preferences.length > 0;
+
+    // No categories → force onboarding
+    if (!hasCategories && !pathname.startsWith("/onboarding")) {
       const url = request.nextUrl.clone();
       url.pathname = "/onboarding";
+      return NextResponse.redirect(url);
+    }
+
+    // Already has categories → block onboarding page
+    if (hasCategories && pathname.startsWith("/onboarding")) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/feed";
       return NextResponse.redirect(url);
     }
   }
