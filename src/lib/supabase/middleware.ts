@@ -56,5 +56,23 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // Redirect authenticated users without categories to onboarding
+  if (user && !pathname.startsWith("/onboarding") && !isPublicRoute) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("category_preferences")
+      .eq("id", user.id)
+      .single();
+
+    if (
+      !profile?.category_preferences ||
+      profile.category_preferences.length === 0
+    ) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/onboarding";
+      return NextResponse.redirect(url);
+    }
+  }
+
   return supabaseResponse;
 }
