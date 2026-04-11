@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { signOut } from "@/actions/auth";
+import { CreateLotTrigger } from "@/components/lot/create-lot-modal";
 
 export function Header() {
   return (
@@ -19,12 +20,9 @@ export function Header() {
           >
             Feed
           </Link>
-          <Link
-            href="/create"
-            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-          >
+          <CreateLotTrigger className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             Create
-          </Link>
+          </CreateLotTrigger>
           <Link
             href="/profile"
             className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
