@@ -351,7 +351,7 @@ Three phases, each a self-contained release. The goal of each phase is explicit,
 
 **Added on top of beta:**
 
-- Personalized feed ranking (behavioral signals: views, clicks, bid history)
+- Personalized feed ranking (behavioral signals: views, clicks, bid history). Approach: OpenAI `text-embedding-3-small` on lot title + description at creation, stored in Supabase `pgvector`. User interest vector = rolling average of embeddings of lots they clicked/bid on. Feed ranking blends cosine similarity with recency. A simpler v0.2 precursor (category weights + click tracking via `user_interactions` table) may ship during beta if the pure-chronological feed hurts engagement.
 - Semantic Want List matching via OpenAI embeddings
 - Buy Now option on auctions (hybrid mode; disappears if bids exceed 50% of Buy Now)
 - In-app notification center
@@ -362,6 +362,7 @@ Three phases, each a self-contained release. The goal of each phase is explicit,
 - Advanced anti-fraud detection
 - Multi-currency (EUR, GBP, USD) and jurisdiction-aware payout logic
 - Visual similarity search (upload a photo to find similar items)
+- Feed card gamification badges beyond rarity: 🔥 Hot (bid spike), ✨ Fresh (<1h old), ⏰ Ending soon (<1h left), ⚠️ Last chance (<15m), 📈 Climbing (price well above starting). One badge per card, prioritized urgency > popularity > rarity.
 - Mobile application consideration (React Native or native)
 - Dark mode
 
