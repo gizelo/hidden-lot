@@ -1,11 +1,12 @@
-export default function FeedPage() {
+import { fetchFeedLots } from "@/actions/feed";
+import { FeedClient } from "@/components/feed/feed-client";
+
+export default async function FeedPage() {
+  const { lots, nextCursor } = await fetchFeedLots({});
+
   return (
-    <div className="flex flex-col items-center justify-center py-24 text-center">
-      <span className="text-6xl mb-6">🪎</span>
-      <h1 className="text-2xl font-bold tracking-tight">Feed coming soon</h1>
-      <p className="mt-2 text-muted-foreground">
-        This is where auction lots will appear. Stay tuned.
-      </p>
+    <div className="mx-auto max-w-6xl">
+      <FeedClient initialLots={lots} initialCursor={nextCursor} />
     </div>
   );
 }
