@@ -7,8 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
@@ -53,6 +51,39 @@ export type Database = {
           },
         ]
       }
+      email_outbox: {
+        Row: {
+          attempts: number
+          created_at: string
+          id: string
+          last_error: string | null
+          payload: Json
+          sent_at: string | null
+          to_email: string
+          type: string
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          id?: string
+          last_error?: string | null
+          payload?: Json
+          sent_at?: string | null
+          to_email: string
+          type: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          id?: string
+          last_error?: string | null
+          payload?: Json
+          sent_at?: string | null
+          to_email?: string
+          type?: string
+        }
+        Relationships: []
+      }
       lots: {
         Row: {
           bid_count: number
@@ -63,6 +94,7 @@ export type Database = {
           duration_hours: number
           ends_at: string | null
           id: string
+          original_ends_at: string
           photo_url: string
           rarity: Database["public"]["Enums"]["rarity_tier"]
           rarity_reasoning: string | null
@@ -83,6 +115,7 @@ export type Database = {
           duration_hours?: number
           ends_at?: string | null
           id?: string
+          original_ends_at: string
           photo_url: string
           rarity?: Database["public"]["Enums"]["rarity_tier"]
           rarity_reasoning?: string | null
@@ -103,6 +136,7 @@ export type Database = {
           duration_hours?: number
           ends_at?: string | null
           id?: string
+          original_ends_at?: string
           photo_url?: string
           rarity?: Database["public"]["Enums"]["rarity_tier"]
           rarity_reasoning?: string | null
@@ -163,7 +197,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      bid_increment: { Args: { current_bid_cents: number }; Returns: number }
+      close_expired_auctions: { Args: never; Returns: number }
+      place_bid: {
+        Args: { p_amount_cents: number; p_lot_id: string }
+        Returns: Json
+      }
     }
     Enums: {
       lot_status: "draft" | "active" | "ended" | "expired"

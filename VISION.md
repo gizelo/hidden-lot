@@ -69,7 +69,7 @@ HiddenLot removes every step that makes listing annoying and replaces it with a 
   - €20–100 → €2 step
   - €100–500 → 5% step
   - over €500 → 5% step, minimum €25
-- **Soft-close.** If a bid is placed in the last 60 seconds, the auction timer is extended by 60 seconds. Prevents pure sniping without dragging the format out.
+- **Soft-close.** If a bid is placed in the last 60 seconds, the auction timer is extended by 60 seconds. Prevents pure sniping without dragging the format out. Extensions cannot push the auction past 30 minutes after the original `ends_at` — once that cap is hit, the next bid does not extend further and the auction closes at the next scheduled close cycle.
 - **Payment holds.** Alpha: Stripe test mode, no real funds. Beta: real Stripe Connect with deferred charge at auction end (see Payments).
 - **No-bid expiry.** If no bids are placed during the auction window, the listing expires. The seller can relist at any time.
 - **Buy Now (v1.0 — not in alpha or beta).** Sellers can optionally set a Buy Now price on any auction. A buyer hitting Buy Now ends the auction immediately and wins the lot. If organic bidding exceeds 50% of the Buy Now price, the Buy Now option is removed and the lot becomes a pure auction.

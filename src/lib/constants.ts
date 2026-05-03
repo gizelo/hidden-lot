@@ -20,6 +20,7 @@ export const DEFAULT_AUCTION_DURATION = 48;
 
 export const SOFT_CLOSE_WINDOW_SECONDS = 60;
 export const SOFT_CLOSE_EXTENSION_SECONDS = 60;
+export const SOFT_CLOSE_MAX_EXTENSION_MINUTES = 30;
 
 /**
  * Returns the minimum bid increment in cents based on the current bid.
