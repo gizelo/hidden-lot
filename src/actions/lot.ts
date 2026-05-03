@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { analyzeItemPhoto, type LotAnalysis } from "@/lib/openai";
+import { moderateListingText } from "@/lib/moderation";
 import { CATEGORIES, RARITY_TIERS, type RarityTier } from "@/lib/constants";
 
 export async function analyzeLot(
@@ -44,6 +45,9 @@ export async function createLot(input: {
   }
 
   // Validate
+  if (!input.photoUrl.trim()) {
+    return { error: "Photo is required" };
+  }
   if (!input.title.trim()) {
     return { error: "Title is required" };
   }
@@ -58,6 +62,11 @@ export async function createLot(input: {
   }
   if (!RARITY_TIERS.includes(input.rarity as RarityTier)) {
     return { error: "Invalid rarity tier" };
+  }
+
+  const moderation = await moderateListingText(input.title, input.description);
+  if (!moderation.ok) {
+    return { error: moderation.reason };
   }
 
   const now = new Date();

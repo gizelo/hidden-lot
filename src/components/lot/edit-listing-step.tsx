@@ -1,18 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CATEGORIES } from "@/lib/constants";
-import { analyzeLot, createLot } from "@/actions/lot";
+import { createLot } from "@/actions/lot";
 import type { LotAnalysis } from "@/lib/openai";
-import {
-  Loader2,
-  ArrowLeft,
-  Sparkles,
-  AlertTriangle,
-} from "lucide-react";
+import { Loader2, ArrowLeft, AlertTriangle } from "lucide-react";
 
 const RARITY_DISPLAY = {
   common: { label: "Common", emoji: "⚪", color: "text-muted-foreground" },
@@ -22,53 +17,25 @@ const RARITY_DISPLAY = {
 
 export function EditListingStep({
   photoUrl,
+  analysis,
   onBack,
   onPublished,
 }: {
   photoUrl: string;
+  analysis: LotAnalysis;
   onBack: () => void;
   onPublished: (lotId: string) => void;
 }) {
   const router = useRouter();
-  const [analysis, setAnalysis] = useState<LotAnalysis | null>(null);
-  const [analyzing, setAnalyzing] = useState(true);
-  const [analyzeError, setAnalyzeError] = useState<string | null>(null);
   const [publishing, setPublishing] = useState(false);
   const [publishError, setPublishError] = useState<string | null>(null);
 
-  // Editable fields
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("");
-  const [priceCents, setPriceCents] = useState(0);
-
-  useEffect(() => {
-    let cancelled = false;
-    async function analyze() {
-      setAnalyzing(true);
-      setAnalyzeError(null);
-      const result = await analyzeLot(photoUrl);
-      if (cancelled) return;
-      if ("error" in result) {
-        setAnalyzeError(result.error);
-        setAnalyzing(false);
-        return;
-      }
-      setAnalysis(result.data);
-      setTitle(result.data.title);
-      setDescription(result.data.description);
-      setCategory(result.data.category);
-      setPriceCents(result.data.suggestedPriceCents);
-      setAnalyzing(false);
-    }
-    analyze();
-    return () => {
-      cancelled = true;
-    };
-  }, [photoUrl]);
+  const [title, setTitle] = useState(analysis.title);
+  const [description, setDescription] = useState(analysis.description);
+  const [category, setCategory] = useState<string>(analysis.category);
+  const [priceCents, setPriceCents] = useState(analysis.suggestedPriceCents);
 
   async function handlePublish() {
-    if (!analysis) return;
     setPublishing(true);
     setPublishError(null);
 
@@ -92,69 +59,48 @@ export function EditListingStep({
     router.push(`/lot/${result.lotId}`);
   }
 
-  // Loading state
-  if (analyzing) {
-    return (
-      <div className="flex flex-col items-center gap-4 py-12">
-        <div className="relative">
-          <Sparkles className="size-10 text-primary animate-pulse" />
-        </div>
-        <div className="text-center">
-          <p className="text-sm font-medium">AI is analyzing your item...</p>
-          <p className="text-xs text-muted-foreground mt-1">
-            This takes a few seconds
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  // Error state
-  if (analyzeError) {
-    return (
-      <div className="flex flex-col items-center gap-4 py-12">
-        <AlertTriangle className="size-10 text-destructive" />
-        <p className="text-sm text-destructive text-center">{analyzeError}</p>
-        <Button variant="outline" onClick={onBack}>
-          <ArrowLeft className="mr-2 size-4" />
-          Try a different photo
-        </Button>
-      </div>
-    );
-  }
-
-  if (!analysis) return null;
-
   const rarity = RARITY_DISPLAY[analysis.rarity];
   const priceEur = (priceCents / 100).toFixed(2);
+  const reasoningBullets = analysis.rarityReasoning
+    .split("\n")
+    .map((s) => s.trim())
+    .filter(Boolean);
 
   return (
     <div className="flex flex-col gap-4">
       {/* Photo + Rarity */}
       <div className="flex gap-3">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={photoUrl}
           alt={title}
-          className="size-24 shrink-0 rounded-xl object-cover"
+          className="size-28 shrink-0 rounded-xl object-cover"
         />
-        <div className="flex flex-col justify-center gap-1 min-w-0">
-          <span className={`text-sm font-semibold ${rarity.color}`}>
-            {rarity.emoji} {rarity.label}
+        <div className="flex min-w-0 flex-col justify-center gap-2">
+          <span className={`text-base font-semibold ${rarity.color}`}>
+            {rarity.emoji} {rarity.label}*
           </span>
-          <p className="text-xs text-muted-foreground line-clamp-3">
-            {analysis.rarityReasoning}
-          </p>
+          {reasoningBullets.length > 0 && (
+            <ul className="space-y-0.5 text-sm text-muted-foreground">
+              {reasoningBullets.map((b, i) => (
+                <li key={i} className="flex gap-2">
+                  <span className="text-muted-foreground/60">•</span>
+                  <span>{b}</span>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </div>
 
-      {/* Disclaimer */}
-      <p className="text-[11px] text-muted-foreground/70">
-        AI guess, not an expert appraisal. Do your own research.
+      {/* Asterisk footnote */}
+      <p className="text-xs text-muted-foreground/70">
+        * AI guess, not an expert appraisal. Do your own research.
       </p>
 
       {/* Title */}
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="lot-title" className="text-xs font-medium">
+      <div className="flex flex-col gap-2">
+        <label htmlFor="lot-title" className="text-sm font-medium">
           Title
         </label>
         <Input
@@ -162,12 +108,13 @@ export function EditListingStep({
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           maxLength={200}
+          className="h-11 text-base md:text-base"
         />
       </div>
 
       {/* Description */}
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="lot-description" className="text-xs font-medium">
+      <div className="flex flex-col gap-2">
+        <label htmlFor="lot-description" className="text-sm font-medium">
           Description
         </label>
         <textarea
@@ -175,21 +122,21 @@ export function EditListingStep({
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           maxLength={1000}
-          rows={3}
-          className="w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-2 text-sm transition-colors outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 resize-none"
+          rows={4}
+          className="w-full min-w-0 resize-none rounded-lg border border-input bg-transparent px-3 py-2.5 text-base outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
         />
       </div>
 
       {/* Category */}
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="lot-category" className="text-xs font-medium">
+      <div className="flex flex-col gap-2">
+        <label htmlFor="lot-category" className="text-sm font-medium">
           Category
         </label>
         <select
           id="lot-category"
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-          className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+          className="h-11 w-full rounded-lg border border-input bg-transparent px-3 text-base outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
         >
           {CATEGORIES.map((cat) => (
             <option key={cat} value={cat}>
@@ -200,8 +147,8 @@ export function EditListingStep({
       </div>
 
       {/* Price */}
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="lot-price" className="text-xs font-medium">
+      <div className="flex flex-col gap-2">
+        <label htmlFor="lot-price" className="text-sm font-medium">
           Starting price (EUR)
         </label>
         <Input
@@ -214,18 +161,22 @@ export function EditListingStep({
             const cents = Math.round(Number(e.target.value) * 100);
             if (cents >= 0) setPriceCents(cents);
           }}
+          className="h-11 text-base md:text-base"
         />
       </div>
 
-      {/* Publish error */}
       {publishError && (
-        <p className="text-sm text-destructive">{publishError}</p>
+        <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
+          <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+          <span>{publishError}</span>
+        </div>
       )}
 
       {/* Actions */}
-      <div className="flex gap-2">
+      <div className="flex gap-2 pt-1">
         <Button
           variant="outline"
+          size="lg"
           onClick={onBack}
           disabled={publishing}
           className="shrink-0"
@@ -234,6 +185,7 @@ export function EditListingStep({
           Back
         </Button>
         <Button
+          size="lg"
           onClick={handlePublish}
           disabled={publishing || !title.trim() || !description.trim() || priceCents < 100}
           className="flex-1"
