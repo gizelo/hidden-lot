@@ -18,6 +18,15 @@ type RpcResponse = {
   extended?: boolean;
 };
 
+type AuthUser = {
+  email_confirmed_at?: string | null;
+  confirmed_at?: string | null;
+};
+
+function hasVerifiedEmail(user: AuthUser): boolean {
+  return Boolean(user.email_confirmed_at ?? user.confirmed_at);
+}
+
 export async function placeBid(
   lotId: string,
   amountCents: number
@@ -31,6 +40,9 @@ export async function placeBid(
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { error: "Sign in to place a bid." };
+  if (!hasVerifiedEmail(user)) {
+    return { error: "Verify your email before placing a bid." };
+  }
 
   const { data, error } = await supabase.rpc("place_bid", {
     p_lot_id: lotId,
@@ -60,6 +72,8 @@ function mapErrorCode(code: string | undefined, minCents?: number): string {
   switch (code) {
     case "unauthenticated":
       return "Sign in to place a bid.";
+    case "email_unverified":
+      return "Verify your email before placing a bid.";
     case "lot_not_found":
       return "Lot not found.";
     case "own_lot":

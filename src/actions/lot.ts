@@ -3,7 +3,21 @@
 import { createClient } from "@/lib/supabase/server";
 import { analyzeItemPhoto, type LotAnalysis } from "@/lib/openai";
 import { moderateListingText } from "@/lib/moderation";
-import { CATEGORIES, RARITY_TIERS, type RarityTier } from "@/lib/constants";
+import {
+  AUCTION_DURATIONS,
+  CATEGORIES,
+  RARITY_TIERS,
+  type RarityTier,
+} from "@/lib/constants";
+
+type AuthUser = {
+  email_confirmed_at?: string | null;
+  confirmed_at?: string | null;
+};
+
+function hasVerifiedEmail(user: AuthUser): boolean {
+  return Boolean(user.email_confirmed_at ?? user.confirmed_at);
+}
 
 export async function analyzeLot(
   photoUrl: string
@@ -15,6 +29,9 @@ export async function analyzeLot(
 
   if (!user) {
     return { error: "Not authenticated" };
+  }
+  if (!hasVerifiedEmail(user)) {
+    return { error: "Verify your email before creating a lot." };
   }
 
   try {
@@ -32,6 +49,7 @@ export async function createLot(input: {
   description: string;
   category: string;
   startingPriceCents: number;
+  durationHours: number;
   rarity: string;
   rarityReasoning: string;
 }): Promise<{ lotId: string } | { error: string }> {
@@ -42,6 +60,9 @@ export async function createLot(input: {
 
   if (!user) {
     return { error: "Not authenticated" };
+  }
+  if (!hasVerifiedEmail(user)) {
+    return { error: "Verify your email before creating a lot." };
   }
 
   // Validate
@@ -63,6 +84,14 @@ export async function createLot(input: {
   if (!RARITY_TIERS.includes(input.rarity as RarityTier)) {
     return { error: "Invalid rarity tier" };
   }
+  if (
+    !AUCTION_DURATIONS.includes(
+      input.durationHours as (typeof AUCTION_DURATIONS)[number]
+    )
+  ) {
+    return { error: "Invalid auction duration" };
+  }
+  const durationHours = input.durationHours;
 
   const moderation = await moderateListingText(input.title, input.description);
   if (!moderation.ok) {
@@ -70,7 +99,7 @@ export async function createLot(input: {
   }
 
   const now = new Date();
-  const endsAt = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+  const endsAt = new Date(now.getTime() + durationHours * 60 * 60 * 1000);
 
   const { data, error } = await supabase
     .from("lots")
@@ -85,7 +114,7 @@ export async function createLot(input: {
       rarity: input.rarity as RarityTier,
       rarity_reasoning: input.rarityReasoning,
       status: "active",
-      duration_hours: 24,
+      duration_hours: durationHours,
       starts_at: now.toISOString(),
       ends_at: endsAt.toISOString(),
     })

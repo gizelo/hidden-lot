@@ -102,7 +102,12 @@ export function BidInput({
           ? "Bid placed — auction extended by 60s."
           : "Bid placed."
       );
-      setValue(((cents + 100) / 100).toFixed(2));
+      const nextBidCents = getNextMinimumBid({
+        bid_count: lot.bid_count + 1,
+        starting_price_cents: startingPriceCents,
+        current_price_cents: result.data.newPriceCents,
+      });
+      setValue((nextBidCents / 100).toFixed(2));
     });
   }
 

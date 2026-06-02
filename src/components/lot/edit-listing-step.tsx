@@ -4,7 +4,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { CATEGORIES } from "@/lib/constants";
+import {
+  AUCTION_DURATIONS,
+  CATEGORIES,
+  DEFAULT_AUCTION_DURATION,
+} from "@/lib/constants";
 import { createLot } from "@/actions/lot";
 import type { LotAnalysis } from "@/lib/openai";
 import { Loader2, ArrowLeft, AlertTriangle } from "lucide-react";
@@ -34,6 +38,7 @@ export function EditListingStep({
   const [description, setDescription] = useState(analysis.description);
   const [category, setCategory] = useState<string>(analysis.category);
   const [priceCents, setPriceCents] = useState(analysis.suggestedPriceCents);
+  const [durationHours, setDurationHours] = useState(DEFAULT_AUCTION_DURATION);
 
   async function handlePublish() {
     setPublishing(true);
@@ -45,6 +50,7 @@ export function EditListingStep({
       description,
       category,
       startingPriceCents: priceCents,
+      durationHours,
       rarity: analysis.rarity,
       rarityReasoning: analysis.rarityReasoning,
     });
@@ -163,6 +169,31 @@ export function EditListingStep({
           }}
           className="h-11 text-base md:text-base"
         />
+      </div>
+
+      {/* Duration */}
+      <div className="flex flex-col gap-2">
+        <label htmlFor="lot-duration" className="text-sm font-medium">
+          Auction duration
+        </label>
+        <div className="grid grid-cols-3 gap-2">
+          {AUCTION_DURATIONS.map((hours) => (
+            <button
+              key={hours}
+              id={hours === AUCTION_DURATIONS[0] ? "lot-duration" : undefined}
+              type="button"
+              onClick={() => setDurationHours(hours)}
+              className={`h-11 rounded-lg border text-sm font-medium transition-colors ${
+                durationHours === hours
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-input bg-background hover:bg-muted"
+              }`}
+              aria-pressed={durationHours === hours}
+            >
+              {hours}h
+            </button>
+          ))}
+        </div>
       </div>
 
       {publishError && (

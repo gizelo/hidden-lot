@@ -4,33 +4,6 @@ import Link from "next/link";
 import { Clock } from "lucide-react";
 import { useCountdown } from "@/hooks/use-countdown";
 import type { FeedLot } from "@/actions/feed";
-import type { RarityTier } from "@/lib/constants";
-
-const RARITY_CHIP = {
-  rare: {
-    label: "Rare",
-    emoji: "🔵",
-    className: "bg-blue-500/90 text-white",
-  },
-  jackpot: {
-    label: "Jackpot",
-    emoji: "🟡",
-    className: "bg-amber-400/95 text-amber-950 shadow-sm shadow-amber-500/40",
-  },
-} as const;
-
-function RarityChip({ rarity }: { rarity: RarityTier }) {
-  if (rarity === "common") return null;
-  const chip = RARITY_CHIP[rarity];
-  return (
-    <span
-      className={`absolute right-2 top-2 inline-flex h-6 items-center gap-1 rounded-full px-2 text-[11px] font-semibold backdrop-blur-sm ${chip.className}`}
-    >
-      <span>{chip.emoji}</span>
-      <span>{chip.label}</span>
-    </span>
-  );
-}
 
 export function LotCard({ lot }: { lot: FeedLot }) {
   const remaining = useCountdown(lot.ends_at);
@@ -49,7 +22,6 @@ export function LotCard({ lot }: { lot: FeedLot }) {
           className="size-full object-cover transition-transform group-hover:scale-105"
           loading="lazy"
         />
-        <RarityChip rarity={lot.rarity} />
       </div>
       <div className="flex flex-1 flex-col gap-3 px-1 pb-1">
         <h3 className="line-clamp-2 text-base font-semibold leading-tight">

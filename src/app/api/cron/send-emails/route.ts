@@ -75,7 +75,7 @@ export async function GET(request: Request) {
   return NextResponse.json({ sent, failed, processed: (pending ?? []).length });
 }
 
-function buildEmail(
+export function buildEmail(
   type: string,
   payload: unknown
 ): { subject: string; html: string } | null {
@@ -95,14 +95,21 @@ function buildEmail(
         lotId,
         lotTitle,
         finalAmountCents: Number(p.final_amount_cents ?? 0),
+        sellerEmail: optionalString(p.seller_email),
       });
     case "auction_ended_seller":
       return auctionEndedSellerEmail({
         lotId,
         lotTitle,
         finalAmountCents: Number(p.final_amount_cents ?? 0),
+        winnerEmail: optionalString(p.winner_email),
       });
     default:
       return null;
   }
+}
+
+function optionalString(value: unknown): string | undefined {
+  const next = String(value ?? "").trim();
+  return next.length > 0 ? next : undefined;
 }

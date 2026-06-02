@@ -1,36 +1,49 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# HiddenLot
 
-## Getting Started
+HiddenLot is a friends-only alpha auction marketplace: upload one item photo, let AI draft the listing, run a short test auction, and hand off manually after the winner is picked.
 
-First, run the development server:
+Alpha is test-mode only. No real payments, Stripe Connect, escrow, chat, watchlists, or disputes are part of this release.
+
+## Local Development
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
 pnpm dev
-# or
-bun dev
+pnpm test
+pnpm lint
+pnpm build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The app uses Next.js 16, Supabase, OpenAI, Resend, Tailwind CSS 4, and Vitest.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Required Environment
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+NEXT_PUBLIC_SITE_URL=
+CRON_SECRET=
+OPENAI_API_KEY=
+RESEND_API_KEY=
+```
 
-## Learn More
+Stripe variables may stay empty for alpha unless a Stripe test flow is added later.
 
-To learn more about Next.js, take a look at the following resources:
+## Alpha Launch Checklist
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Apply Supabase migrations through `005_alpha_launch_hardening.sql`.
+- Confirm Supabase Auth email confirmation is enabled.
+- Configure the `lot-photos` public storage bucket from the migrations.
+- Set `NEXT_PUBLIC_SITE_URL` to the deployed app URL so email links point to the right host.
+- Set `CRON_SECRET` in Vercel and call `/api/cron/send-emails` with `Authorization: Bearer <CRON_SECRET>`.
+- Set `SUPABASE_SERVICE_ROLE_KEY` and `RESEND_API_KEY` in Vercel so the email cron can drain `email_outbox`.
+- Run `pnpm test`, `pnpm lint`, and `pnpm build` before creating the draft PR.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Alpha Manual Smoke Test
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. User A signs up, verifies email, completes onboarding, and creates a 48h lot.
+2. User B bids, then User C outbids B.
+3. Run the email cron and confirm User B receives the outbid email.
+4. Force the auction close with `select public.close_expired_auctions();`.
+5. Run the email cron again and confirm winner/seller emails include the other party's email for handoff.
+6. Confirm `/profile` shows User A's lot and each bidder's bid history.

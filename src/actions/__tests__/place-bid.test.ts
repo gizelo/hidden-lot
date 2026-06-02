@@ -18,13 +18,24 @@ describe("placeBid", () => {
   beforeEach(() => {
     rpcMock.mockReset();
     getUserMock.mockReset();
-    getUserMock.mockResolvedValue({ data: { user: { id: "user-1" } } });
+    getUserMock.mockResolvedValue({
+      data: { user: { id: "user-1", email_confirmed_at: "2026-05-03T12:00:00Z" } },
+    });
   });
 
   it("rejects unauthenticated callers without hitting the RPC", async () => {
     getUserMock.mockResolvedValue({ data: { user: null } });
     const result = await placeBid(VALID_LOT, 1000);
     expect(result).toEqual({ error: "Sign in to place a bid." });
+    expect(rpcMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects unverified users without hitting the RPC", async () => {
+    getUserMock.mockResolvedValue({
+      data: { user: { id: "user-1", email_confirmed_at: null } },
+    });
+    const result = await placeBid(VALID_LOT, 1000);
+    expect(result).toEqual({ error: "Verify your email before placing a bid." });
     expect(rpcMock).not.toHaveBeenCalled();
   });
 
@@ -79,6 +90,15 @@ describe("placeBid", () => {
     });
     const result = await placeBid(VALID_LOT, 1500);
     expect(result).toEqual({ error: "This auction has ended." });
+  });
+
+  it("maps email_unverified to a friendly message", async () => {
+    rpcMock.mockResolvedValue({
+      data: { ok: false, error: "email_unverified" },
+      error: null,
+    });
+    const result = await placeBid(VALID_LOT, 1500);
+    expect(result).toEqual({ error: "Verify your email before placing a bid." });
   });
 
   it("returns generic error when the RPC itself errors out", async () => {

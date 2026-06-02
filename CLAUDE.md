@@ -42,7 +42,7 @@ src/
       client.ts       # browser Supabase client (createBrowserClient)
       server.ts       # server Supabase client (createServerClient with cookies)
       admin.ts        # service-role client for webhooks/cron
-      middleware.ts    # auth middleware helper
+      middleware.ts    # auth/session helper used by src/proxy.ts
     stripe.ts         # Stripe client init
     openai.ts         # OpenAI client init
     utils.ts          # pure utility functions
@@ -182,6 +182,8 @@ pnpm supabase:migrate # run pending migrations
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
+NEXT_PUBLIC_SITE_URL=
+CRON_SECRET=
 OPENAI_API_KEY=
 STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=

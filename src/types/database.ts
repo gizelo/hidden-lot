@@ -199,6 +199,8 @@ export type Database = {
     Functions: {
       bid_increment: { Args: { current_bid_cents: number }; Returns: number }
       close_expired_auctions: { Args: never; Returns: number }
+      current_user_email_verified: { Args: never; Returns: boolean }
+      has_bid_on_lot: { Args: { p_lot_id: string }; Returns: boolean }
       place_bid: {
         Args: { p_amount_cents: number; p_lot_id: string }
         Returns: Json
