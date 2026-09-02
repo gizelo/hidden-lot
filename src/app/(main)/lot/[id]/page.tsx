@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { ArrowLeft, HelpCircle, Trophy } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
@@ -78,11 +79,16 @@ export default async function LotPage({
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-8">
         {/* Media + Title */}
         <div className="order-1 space-y-4 lg:col-start-1 lg:row-start-1">
-          <img
-            src={lot.photo_url}
-            alt={lot.title}
-            className="w-full rounded-2xl object-cover aspect-[4/3]"
-          />
+          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl">
+            <Image
+              src={lot.photo_url}
+              alt={lot.title}
+              fill
+              sizes="(min-width: 1024px) 760px, 100vw"
+              className="object-cover"
+              unoptimized
+            />
+          </div>
           <div className="space-y-2">
             <h1 className="text-2xl font-bold tracking-tight lg:text-3xl">
               {lot.title}

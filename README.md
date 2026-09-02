@@ -1,5 +1,10 @@
 # HiddenLot
 
+> **Archived on September 2, 2026.** HiddenLot is preserved as a product
+> hypothesis and implementation prototype. It is not deployed, operated, or
+> accepting users. See [ARCHIVE.md](ARCHIVE.md) for the decision record,
+> evidence, shutdown state, and restart conditions.
+
 HiddenLot is a friends-only alpha auction marketplace: upload one item photo, let AI draft the listing, run a short test auction, and hand off manually after the winner is picked.
 
 Alpha is test-mode only. No real payments, Stripe Connect, escrow, chat, watchlists, or disputes are part of this release.
@@ -29,7 +34,10 @@ RESEND_API_KEY=
 
 Stripe variables may stay empty for alpha unless a Stripe test flow is added later.
 
-## Alpha Launch Checklist
+## Historical Alpha Launch Checklist
+
+The following checklist is retained as implementation history. It is not an
+active launch plan.
 
 - Apply Supabase migrations through `005_alpha_launch_hardening.sql`.
 - Confirm Supabase Auth email confirmation is enabled.

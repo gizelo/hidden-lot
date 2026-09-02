@@ -1,5 +1,9 @@
 # HiddenLot
 
+> **Historical product vision.** Active development stopped on September 2,
+> 2026. This document records the intended product, not a validated or operating
+> business. See [ARCHIVE.md](ARCHIVE.md) for the decision record.
+
 > **Unhide your lot.**
 > _Your junk, someone's jackpot._ — marketing
 
