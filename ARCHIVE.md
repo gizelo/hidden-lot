@@ -145,10 +145,9 @@ sellers before implementation.
 ## Shutdown record
 
 - Source code and migrations: preserved in this repository.
-- Hosted Supabase data: a sanitized metadata snapshot and all seventeen test
-  images were saved locally before shutdown; no authentication records, email
-  addresses, secrets, or listing descriptions were retained.
-- Supabase project: retired after the local snapshot was verified.
+- Hosted Supabase data: contained disposable test accounts, lots, and images;
+  no local copy was retained because the data had no recovery value.
+- Supabase project: paused and inactive on the Free plan, not deleted.
 - Supabase scheduled auction job: stopped with the hosted project.
 - Vercel: no linked local project, GitHub deployment, repository webhook, or
   GitHub deployment record was found during shutdown review.
@@ -183,9 +182,10 @@ If the restart conditions are eventually met:
 
 1. Unarchive and clone the repository.
 2. Review this decision record and revalidate every restart condition.
-3. Create a new Supabase project and apply the tracked migrations in order.
+3. Restore the paused Supabase project if it is still eligible, or create a new
+   project and apply the tracked migrations in order.
 4. Recreate test users rather than restoring old authentication records.
-5. Restore only intentionally reviewed test assets from the local snapshot.
+5. Recreate test data and assets intentionally; no local data snapshot exists.
 6. Rotate and configure new secrets; never reuse the retired credentials.
 7. Resolve the documented product, moderation, payments, delivery, and policy
    gaps before any real-money or public launch.
